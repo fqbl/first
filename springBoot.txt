@@ -1,0 +1,184 @@
+约定大于配置
+
+yml文件修改端口号：
+server:
+  port: 8081
+  
+@ConfigurationProperties：告诉SpringBoot将本类中的所有属性和配置文件中相关的配置进行绑定；
+prefix = "person"：配置文件中哪个下面的所有属性进行一一映射
+
+加载指定的配置文件：@PropertySource(value = {"classpath:person.properties"})
+
+不推荐：@ImportResource(locations = {"classpath:beans.xml"})：导入Spring的配置文件，让配置文件里面的内容生效；
+
+我们可以通过启用 debug=true属性；来让控制台打印自动配置报告，这样我们就可以很方便的知道哪些自动配置类生效
+
+SpringBoot选用 SLF4j和logback；
+
+logback-spring.xml放类路径下
+
+所有 /webjars/** ，都去 classpath:/META-INF/resources/webjars/ 找资源；
+webjars：以jar包的方式引入静态资
+http://www.webjars.or
+
+只要我们把HTML页面放在classpath:/templates/，thymeleaf就能自动渲染
+导入thymeleaf的名称：<html lang="en" xmlns:th="http://www.thymeleaf.org
+
+有模板引擎的情况下；error/状态码; 【将错误页面命名为 错误状态码.html 放在模板引擎文件夹里面的
+error文件夹下】，发生此状态码的错误就会来到 对应的页面；
+我们可以使用4xx和5xx作为错误页面的文件名来匹配这种类型的所有错误，精确优先（优先寻找精确的状态
+码.html）；
+
+druid数据源，有监控功能
+
+当IDEA出现cannot resolve symbol时，重启编辑器：file-->invalidate caches/restart...
+
+
+JSR107缓存:需要导入<dependency><groupId>javax.cache</groupId><artifactId>cache-api</artifactId></dependency>
+CachingProvider相当于数据库、CacheManager相当于数据库连接池、Cache、Entry、Expiry
+@Cacheable(value="person",key="#id") 对方法结果进行缓存（查询）
+@CacheEvict(value="person",key="#id") 清空缓存（删除）
+@CachePut(value="person",key="#result.id") 更新缓存（更新）
+@EnableCaching 开启基于注解的缓存
+
+当key没指定时，参数则为key，返回值则为value。因此@Cacheable和@CachePut的key得一样，不然更新缓存不生效。
+@CacheEvict(value="person",allEntries=true) 删除对应person缓存中的所有缓存（删除）
+
+@CacheConfig(value="person") 标注在类上（抽取缓存的公共配置）
+
+使用redis做缓存：导入
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+配置文件中需要写上：spring.redis.host=ip地址
+StringRedisTemplate和RedisTemplate都是操作redis的类
+将数据转换为json的方式存储：
+@Configuration
+public class MyRedisConfig {
+    @Bean
+    public RedisTemplate<Object, Person> personRedisTemplate(RedisConnectionFactory redisConnectionFactory) throws UnknownHostException {
+        RedisTemplate<Object, Person> template = new RedisTemplate();
+        template.setConnectionFactory(redisConnectionFactory);
+        //序列化为json的数据格式
+        Jackson2JsonRedisSerializer ser = new Jackson2JsonRedisSerializer(Person.class);
+        template.setDefaultSerializer(ser);
+        return template;
+    }
+}
+
+消息队列：
+点对点式：消息只有唯一的发送者和接受者，但并不是说只能有一个接收者
+发布订阅式：发送者发送主题，多个接收者监听这个主题，则监听的接收者都能收到消息
+JMS：JAVA消息服务
+AMQP:高级消息队列协议
+RabbitMQ是AMQP的实现
+
+Exchange有direct(点对点)、fanout(订阅者全部能收到)、topic(符合规则的订阅者收到[*、#能代表任意字符])、headers(不用)
+
+去镜像中心下载rabbitMQ(docker pull hub.c.163.com/library/rabbitmq:3-management)
+docker run -d -p 5672:5672 -p 15672:15672 --name myRabbitMQ fb11f4e0a6b6
+网址访问：http://192.168.252.129:15672/
+默认用户名：guest	密码：guest
+创建交换机Exchange、创建队列Queues、在交互机里绑定交换机和队列
+
+RabbitAutoConfiguration是rabbitMQ的自动配置类
+@Autowired
+RabbitTemplate rabbitTemplate;
+//Message需要自己构造一个；定义消息体内容和消息投
+rabbitTemplate.send(exchange,routeKey,message);
+//object默认当成消息体，只需要传入要发送的对象，自动序列化发送给rabbitmq;
+rabbitTemplate.converAndSend(exchange,routeKey,object);
+//接收消息并转换
+rabbitTemplate.receiveAndConvert(queueName);
+
+//可以操作Exchange、Queues、Binding
+@Autowired
+AmqpAdmin amqpAdmin;
+
+spring.rabbitmq.host=192.168.252.129
+spring.rabbitmq.username=guest
+spring.rabbitmq.password=guest
+
+//将消息转换为json格式
+@Configuration
+public class MyAMQPConfig{
+	@Bean
+	public MessageConverter messageConverter(){
+		return new Jackson2JsonMessageConverter();
+	}
+}
+
+@EnableRabbit //开启基于注解的RabbitMQ模式
+
+@RabbitListener(queues="队列名称") //监听消息队列的内容，监听到就会执行方法
+
+去镜像中心下载elasticsearch(docker pull hub.c.163.com/library/elasticsearch:latest)
+docker run -e ES_JAVA_OPTS="-Xms256m -Xmx256m" -d -p 9200:9200 -p 9300:9300 --name es01 7516701e4922
+-e ES_JAVA_OPTS="-Xms256m -Xmx256m"是限制内存大小，不写默认2G，9300是分布式中系统交互的端口
+网址访问：http://192.168.252.129:9200/
+elasticsearch官网：https://www.elastic.co/guide/cn/elasticsearch/guide/current/index.html
+
+SpringBoot默认支持两种技术来和ES交互
+1、Jest（默认不生效），需导入
+<!-- https://mvnrepository.com/artifact/io.searchbox/jest -->
+<dependency>
+    <groupId>io.searchbox</groupId>
+    <artifactId>jest</artifactId>
+    <version>5.3.3</version>
+</dependency>
+spring.elasticsearch.jest.uris=http://192.168.252.129:9200
+
+@Autowired
+JestClient jestClient;
+//构建一个索引功能
+Index index = new Index.Builder(数据).index("").type("").build();
+jestClient.execute(index);
+//测试搜索
+String json="...";
+Search search = new Search.Builder(json).addIndex("").addType("").build();
+SearchResult searchResult = jestClient.execute(search);
+
+2、SpringData ElasticSearch[ES版本有可能不合适 https://github.com/spring-projects/spring-data-elasticsearch]
+	1)Client节点信息clusterNodes;clusterName
+	2)ElasticSearchTemplate操作es
+	3)编写一个ElasticsearchRepository操作es
+spring.data.elasticsearch.cluster-name=elasticsearch	#访问http://192.168.252.129:9200/网址获得的cluster_name
+spring.data.elasticsearch.cluster-nodes=192.168.252.129:9300
+
+@EnableAsync //开启异步注解
+@Async //标注的方法会异步处理
+
+@EnableScheduling //开启定时任务
+@Scheduled(cron="")	//标注的方法会定时执行
+
+邮件：引入spring-boot-starter-mail
+spring.mail.username=账号
+spring.mail.password=授权码
+spring.mail.host=协议
+#spring.mail.properties.mail.smtp.ssl.enable=true	开启安全的SSL协议
+
+@Autowired
+JavaMailSenderImpl mailSender;
+//创建简单的文字邮件
+SimpleMailMessage message = new SimpleMailMessage();
+mailSender.send(message);
+
+MimeMessage mimeMessage = mailSender.createMimeMessage();
+MimeMessageHelper helper = new MimeMessageHelper(mimeMessage,true);
+//上传文件
+helper.addAttachment(...);
+mailSender.send(mimeMessage);
+
+SpringSecurity安全:引入spring-boot-starter-security
+
+热部署：Spring Boot Devtools
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-devtools</artifactId>
+	<optional>true</optional>
+</dependency>
+Ctrl + F9
+
+监控管理：引入spring-boot-starter-actuator
+management.security.enabled=false
