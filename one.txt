@@ -1,1 +1,32 @@
-eeeee
+标注在类上的注解
+@Configuration 标注的类就类似于spring的配置文件
+@ComponentScan(value = {"com.amass"}) 包扫描
+@Conditional(value = {LinuxConditition.class}) 满足当前条件，这个类中配置的所有bean注册才能生效     
+@Import({Color.class,Red.class}) 通常用于第三方库的导入，快速给容器导入一个组件，默认组件的id是全类名，能达到@Bean的效果.
+@Import({MyImportSelector.class}) MyImportSelector是实现了ImportSelector接口的类，返回全类名的String[]，数组中 有哪些类就能在IOC容器中注册哪些类  
+@Import({MyImportBeanDefinitionRegistrar.class}) MyImportBeanDefinitionRegistrar是实现ImportBeanDefinitionRegistrar接口的类      
+@PropertySource(value={"classpath:/person.properties"}) 读取外部配置文件中的K/V保存到运行的环境变量中；加载完外部的配置文件以后使用${}取出配置文件的值
+@Profile:指定组件在哪个环境下才能被注册到容器中
+@EnableAspectJAutoProxy 给配置类中添加。基于注解的AOP模式
+@Aspect 声明切面类
+
+标注在方法上的注解
+@Bean(initMethod="初始化方法名",destroyMethod="销毁方法名") 标注的方法会注入IOC容器中
+（对应的实体类实现InitializingBean接口（初始化方法），实现DisposableBean接口（销毁方法）；
+   在方法上标注PostConstruct(初始化方法)，在方法上标注@PreDestroy(销毁方法 )）      
+@Scope("prototype") 默认singleton，单实例，IOC容器启动就创建对象；prototype多实例，每次使用都创建对象；request；session
+@Lazy 懒加载，IOC容器启动时不加载，第一次使用才创建对象
+@Conditional(value = {LinuxConditition.class}) 满足条件才会创建对象， LinuxConditition是实现Condition接口的类
+@Primary，让Spring进行自动装配的时候，默认使用首选的bean，也可以继续使用@Qualifier
+@Profile:指定组件在哪个环境下才能被注册到容器中
+@Before 前置通知
+@After	后置通知
+@AfterReturning	返回通知
+@AfterThrowing	异常通知
+@Around	环绕通知
+@Pointcut("execution(public int com.*(..))")
+
+标注在属性上的注解
+@Qualifier("bookDao") 指定需要装配的组件的id，而不是使用属性名
+@Autowired
+
