@@ -1,0 +1,55 @@
+MyCAT对运维来说：
+MyCAT相当于MySQL SERVER层
+MySQL相当于MyCAT的存储层
+MyCAT中不存储数据，所有数据存储在MySQL中
+
+MyCAT对研发人员来说：
+MyCAT就是MySQL
+MyCAT对于研发人员来说是透明的
+MyCAT对使用的SQL有一些限制
+
+MyCAT对架构师来说：
+MyCAT是一个数据库中间层
+MyCAT可以实现对后端数据库的分库分表和读写分离
+MyCAT对前端应用隐藏了后端数据库的存储逻辑
+
+数据库中间层(MyCAT)位于前端应用与后端数据库中间层
+
+MyCAT的主要作用
+1、作为分布式数据库中间层使用
+2、实现后端数据库的读写分离及负载均衡
+3、对业务数据库进行垂直切分
+4、对业务数据库进行水平切分
+5、控制数据库连接的数量
+
+MyCAT的基本元素
+逻辑库：对应用来说相当于MySQL中的数据库；逻辑库可对应后端多个物理数据库；逻辑库并不保存数据
+逻辑表：对应用来说相当于MySQL中的数据表；逻辑表可对应后端多个物理数据库中的表；逻辑表并不保存数据
+
+逻辑表的类别：分片表(水平切分)与非分片表按是否被分片划分；全局表，在所有分片中都存在的表；ER关系表，按ER关系进行分片的表
+
+MyCAT的安装步骤
+1、下载并解压MyCAT
+	(1)wget http://dl.mycat.io/1.6.5/Mycat-server-1.6.5-release-20180122220033-linux.tar.gz
+	(2)tar -zvxf Mycat-server-1.6.5-release-20180122220033-linux.tar.gz
+2、安装Java运行环境jdk1.7或以上版本
+3、新建MyCAT运行系统账号
+	(1)adduser mycat
+	(2)chown mycat:mycat -R mycat/
+4、配置系统环境变量
+	(1)wrapper.conf中改变内存大小(默认2G)
+	(2)增加系统环境变量(vim /etc/profile 
+							export MYCAT_HOME=/opt/mycat
+							export PATH=$MYCAT_HOME/bin:$PATH
+						重启配置：source /etc/profile
+						启动mycat：mycat start
+						到logs目录下，用more wrapper.log命令看看是否成功启动)
+5、修改MyCAT启动参数
+
+server.xml文件用途：配置系统相关参数；配置用户访问权限；配置SQL防火墙及SQL拦截功能
+<system>配置MyCAT系统参数;<user>配置MyCAT的访问用户及权限;用户密码加密 
+如：
+<system>
+	<property name="serverPort">3306</property>
+</system>
+
