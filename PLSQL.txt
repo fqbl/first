@@ -19,20 +19,114 @@ type *_record is record(
 v_*_record *_record;	(定义一个记录类型为*_record的成员变量v_*_record)
 
 条件判断：
-	方式一：if <布尔表达式> then 
+	方式一(常用)：if <布尔表达式> then 
 				(SQL语句) 
 			elsif<布尔表达式> then 
 				(SQL语句)
 			else
 				(SQL语句)
 			end if;
-	方式二： case ... when ... then ... end;
+	方式二：case (selector) 
+				when (expression1) then (result1) 
+				when (expression2) then (result2) 
+				when (expressionN) then (resultN) 
+				[else resultN+1]
+			end;
 循环结构：
 	方式一：loop ... exit when ... end loop;
 	方法二：while ... loop ... end loop;
-	方法三：for i in ... loop ... end loop;
+	方法三：for i in [reverse] 1..10 loop ... end loop;	(reverse是反转，例子中就是从10到1)
 goto、exit
 
 游标的使用(类似于java中的Iterator)
 
 赋值操作：":="
+
+/*
+光标的属性 %found %notfound
+fetch获取光标的值
+into 赋值给对应变量
+exit when 循环退出的条件
+*/
+DECLARE
+--定义一个光标
+cursor cemp is SELECT "name" FROM "people"
+--为光标对应变量
+pename VARCHAR2(255);
+BEGIN
+	--打开光标
+	open cemp;
+	
+	loop
+		fetch cemp into pename;
+		exit when cemp%notfound;
+		dbms_output.put_line(pename);
+	end loop;
+	
+	--关闭光标
+	close cemp;
+end;
+
+
+DECLARE
+--定义一个光标
+cursor cemp is SELECT "name","age" FROM "people";
+--为光标对应变量
+pename VARCHAR2(255);
+peage NUMBER;
+BEGIN
+	--打开光标
+	open cemp;
+	loop
+		fetch cemp into pename,peage;
+		exit when cemp%notfound;
+		dbms_output.put_line(pename||'的年龄是'||peage);
+	end loop;
+	--关闭光标
+	close cemp;
+end;
+
+存储过程和存储函数的唯一区别是函数总向调用者返回数据，而过程则不返回数据
+
+create or replace function func_name(dept_id number,salary number)
+return number
+is
+	--函数使用过程中，需要声明的变量、记录类型、cursor
+begin
+	--函数执行体
+exception
+	--异常执行
+end;
+
+存储函数例子：
+create or replace function hello_world(v_logo varchar2)
+return varchar2
+is
+begin
+	return 'helloworld ' || v_logo;
+end;
+调用：hello_world('小明')
+
+关于OUT型的参数：因为函数只能有一个返回值，PL/SQL程序可以通过OUT型的参数实现有多个返回值
+
+IN参数标记表示传递给函数的值在函数执行中不改变；OUT标记标识一个值在函数中进行计算并通过该参数传递给调用语句；IN OUT标记表示传递给函数的值可以变化并传递给调用语句。若省略标记，则参数隐含为IN
+
+存储过程：
+create or replace procedure hello_world(v_logo varchar2)
+is
+
+begin
+	dbms_output.put_line(v_logo);
+end;
+
+触发器是当某个事件发生时自动隐式运行。触发器不能接收参数的。
+例子：
+create or replace trigger hello_trigger
+after	--after之后执行，before之前执行
+update on employees
+for each row		(行级的，每更新一行数据就会执行一次操作;注释这行脚本，一条更新脚本则只会执行一次)
+begin
+	dbms_output.put_line('hello');
+end;
+
+:old表示触发器执行之前的表，:new表示执行之后的表
