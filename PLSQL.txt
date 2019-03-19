@@ -1,0 +1,38 @@
+DECLARE
+	/*声明部分：在此声明PL/SQL用到的变量，类型及游标，以及局部的存储过程和函数*/
+BEGIN
+	/*执行部分：过程及SQL语句，即程序的主要部分*/
+	/*sql语句的操作：select ... into ... from ... where ...*/
+EXCEPTION
+	/*执行异常部分：错误处理*/
+END;
+其中执行部分是必须的
+
+声明变量：v_* 表名.字段名%type	(例子：v_sal employees.salary%type)
+v_* 表名%rowtype;	(变量名跟表中的列一一对应)
+
+声明记录类型(记录类型相当于JAVA中的类，语法格式type ... is record(,,,);)：
+type *_record is record(
+	v_sal employees.salary%type,
+	v_email employees.email%type
+);
+v_*_record *_record;	(定义一个记录类型为*_record的成员变量v_*_record)
+
+条件判断：
+	方式一：if <布尔表达式> then 
+				(SQL语句) 
+			elsif<布尔表达式> then 
+				(SQL语句)
+			else
+				(SQL语句)
+			end if;
+	方式二： case ... when ... then ... end;
+循环结构：
+	方式一：loop ... exit when ... end loop;
+	方法二：while ... loop ... end loop;
+	方法三：for i in ... loop ... end loop;
+goto、exit
+
+游标的使用(类似于java中的Iterator)
+
+赋值操作：":="
